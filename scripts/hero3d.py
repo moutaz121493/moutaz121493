@@ -1,272 +1,245 @@
 #!/usr/bin/env python3
-"""3D hero: CAN bits -> RAG pipelines.
+"""Hero: "from CAN bits to RAG pipelines" told as one pipeline in five stages, with isometric depth.
 
-A twisted pair (CAN_H / CAN_L) carries a CAN FD frame into a slowly rotating 3D neural network.
-Everything is real 3D maths, precomputed: rotate -> perspective-project -> one SMIL keyframe per frame.
-Loop: 36 s for one full turn of the network; the frame + pulse burst repeats every 6 s inside it,
-so every animation loops seamlessly. Deterministic (fixed seed).
+  01 CAN FD bits  ->  02 decode (MCU)  ->  03 embed (tokens)  ->  04 reason (layered network)  ->  05 answer + sources
+
+One 8 s story loop: the frame scrolls into the chip, the chip lights up, bytes become token cubes, an activation
+wave sweeps through the network layer by layer, then the answer writes itself and the citations appear; everything
+fades back and the loop restarts seamlessly. Reduced motion shows the finished state.
+Desktop 1280 x 470 (stages left to right); phone 640 x 1130 (stages top to bottom). Deterministic.
 """
-import math
-import random
+from iso import iso
+from svglib import Svg, THEMES, write
 
-from svglib import Svg, THEMES, vals, write
-
-W, H = 1280, 400
-LOOP = 36.0            # one full rotation
-N = 72                 # rotation keyframes (0.5 s)
-NP = 144               # pulse keyframes (0.25 s)
-BURST = 6.0            # a frame arrives every 6 s
-TRAVEL = 2.0           # seconds the frame takes along the bus
-CX, CY, S, D = 1000, 186, 96, 5.6       # net centre on screen, scale, camera distance
-YAW, TILT = 0.42, 0.20
-HZ, BUS0, LABEL, NETLAB_Y = 205, (600, 318), 1.0, 360   # floor horizon, bus start, label scale, net caption y                   # fixed view angles (rad): look at the layers from the side and a bit above
-LAYERS = [(4, 0.75), (6, 1.10), (6, 1.10), (3, 0.62)]   # (nodes, ring radius)
+LOOP = 8.0
 
 
-def net_nodes():
-    pts = []
-    for li, (n, r) in enumerate(LAYERS):
-        x = -1.95 + li * 1.3
-        for k in range(n):
-            a = 2 * math.pi * k / n + li * 0.45
-            pts.append((li, (x, r * math.cos(a), r * math.sin(a))))
-    return pts
+def kt(*pairs):
+    """[(time_s, value)] -> (values, keyTimes) for a looping SMIL animation."""
+    pts = sorted(pairs)
+    if pts[0][0] > 0:
+        pts.insert(0, (0.0, pts[0][1]))
+    if pts[-1][0] < LOOP:
+        pts.append((LOOP, pts[0][1]))
+    return ";".join(str(v) for _, v in pts), ";".join(f"{t / LOOP:.4f}" for t, _ in pts)
 
 
-def project(p, ang):
-    x, y, z = p
-    # spin around the layer axis (x) like a drum, then a fixed yaw (y) and tilt (x) for the 3D view;
-    # the layers stay ordered input -> output from left to right
-    y, z = y * math.cos(ang) - z * math.sin(ang), y * math.sin(ang) + z * math.cos(ang)
-    x, z = x * math.cos(YAW) + z * math.sin(YAW), -x * math.sin(YAW) + z * math.cos(YAW)
-    y, z = y * math.cos(TILT) - z * math.sin(TILT), y * math.sin(TILT) + z * math.cos(TILT)
-    k = D / (D + z)
-    return CX + S * x * k, CY - S * y * k, k, z
+def anim(attr, *pairs):
+    v, k = kt(*pairs)
+    return f'<animate attributeName="{attr}" values="{v}" keyTimes="{k}" dur="{LOOP}s" repeatCount="indefinite"/>'
 
 
-def depth(z):
-    """near = 1, far = 0"""
-    return max(0.0, min(1.0, (1.6 - z) / 3.2))
+def poly(pts):
+    return " ".join(f"{a:.1f},{b:.1f}" for a, b in pts)
 
 
-def floor(svg, t):
-    """Perspective grid floor + PCB traces fading into the distance (static camera)."""
-    hz, fy = HZ, 1.9            # horizon y on screen, floor height below camera
-    def fp(x, z):                # floor point (world x, depth z>0) -> screen
-        return W / 2 + 330 * x / z, hz + 330 * fy / z / 3.4
+def iso_box(x, y, z, w, d, h, ox, oy, s, top, left, right, stroke):
+    P = lambda a, b, c: iso(a, b, c, ox, oy, s)   # noqa: E731
+    t_ = [P(x, y, z + h), P(x + w, y, z + h), P(x + w, y + d, z + h), P(x, y + d, z + h)]
+    l_ = [P(x, y + d, z + h), P(x + w, y + d, z + h), P(x + w, y + d, z), P(x, y + d, z)]
+    r_ = [P(x + w, y, z + h), P(x + w, y + d, z + h), P(x + w, y + d, z), P(x + w, y, z)]
+    sw = f'stroke="{stroke}" stroke-width="1.2" stroke-linejoin="round"'
+    return (f'<polygon points="{poly(l_)}" fill="{left}" {sw}/><polygon points="{poly(r_)}" fill="{right}" {sw}/>'
+            f'<polygon points="{poly(t_)}" fill="{top}" {sw}/>')
+
+
+# ---------------- the five stages (each drawn around a centre point, at scale s) ----------------
+
+BITS = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1]
+
+
+def stage_bus(svg, t, cx, cy, s):
+    """01: CAN_H / CAN_L on an isometric plate; the bit pattern scrolls towards the chip."""
+    w = 184 * s
+    plate = [(cx - w / 2, cy + 26 * s), (cx + w / 2 - 30 * s, cy + 26 * s), (cx + w / 2, cy + 46 * s), (cx - w / 2 + 30 * s, cy + 46 * s)]
+    out = [f'<polygon points="{poly(plate)}" fill="{t["bg2"]}" stroke="{t["line2"]}"/>']
+    bw = 16 * s
+
+    def wave(rec, dom):
+        d, x = [], 0.0
+        for _ in range(3):
+            for b in BITS:                               # 1 = recessive, 0 = dominant
+                y = rec if b else dom
+                d.append(f"L{x:.1f},{y:.1f} L{x + bw:.1f},{y:.1f}")
+                x += bw
+        return f"M0,{rec:.1f} " + " ".join(d), x / 3
+    dh, per = wave(cy - 8 * s, cy - 28 * s)              # CAN_H rises when dominant
+    dl, _ = wave(cy + 2 * s, cy + 20 * s)                # CAN_L falls when dominant
+    cid = f"bus{int(cx)}{int(cy)}"
+    svg.defs.append(f'<clipPath id="{cid}"><rect x="{cx - w / 2:.1f}" y="{cy - 40 * s:.1f}" width="{w:.1f}" height="{70 * s:.1f}"/></clipPath>')
+    move = (f'<animateTransform attributeName="transform" type="translate" values="{cx - w / 2 - per:.1f},0;{cx - w / 2:.1f},0" '
+            f'dur="{LOOP / 2}s" repeatCount="indefinite"/>')
+    paths = (f'<path d="{dh}" fill="none" stroke="{t["accent"]}" stroke-width="{2.6 * s:.1f}" stroke-linejoin="round"/>'
+             f'<path d="{dl}" fill="none" stroke="{t["ai"]}" stroke-width="{2.6 * s:.1f}" stroke-linejoin="round"/>')
+    out.append(f'<g clip-path="url(#{cid})"><g class="m">{move}{paths}</g><g class="s" transform="translate({cx - w / 2:.1f},0)">{paths}</g></g>')
+    out.append(svg.text(cx - w / 2, cy - 36 * s, "CAN_H", "mono", 11 * s, t["accentText"], ls=1))
+    out.append(svg.text(cx - w / 2, cy + 40 * s, "CAN_L", "mono", 11 * s, t["aiText"], ls=1))
+    out.append(svg.text(cx + 8 * s, cy + 66 * s, "1 0 1 1 0 1 0 0 …", "mono", 11.5 * s, t["muted"], ls=1.5))
+    return "".join(out)
+
+
+def stage_mcu(svg, t, cx, cy, s):
+    """02: an isometric microcontroller; the die lights up when the frame arrives."""
+    ox, oy = cx - 46 * s, cy - 16 * s
     out = []
-    for i in range(-14, 15):
-        x = i * 0.9
-        a, b = fp(x, 1.0), fp(x, 14)
-        out.append(f'<line x1="{a[0]:.1f}" y1="{a[1]:.1f}" x2="{b[0]:.1f}" y2="{b[1]:.1f}" stroke="{t["line"]}" stroke-width="1"/>')
-    for j, z in enumerate([1.0, 1.25, 1.6, 2.1, 2.8, 3.8, 5.2, 7.4, 10.5, 14]):
-        a, b = fp(-14, z), fp(14, z)
-        out.append(f'<line x1="{a[0]:.1f}" y1="{a[1]:.1f}" x2="{b[0]:.1f}" y2="{b[1]:.1f}" stroke="{t["line"]}" stroke-width="{1.1 - j * .07:.2f}"/>')
-    rnd = random.Random(11)
-    pulses = []
-    for i in range(7):
-        x, z = rnd.uniform(-4, 4), 1.1
-        pts = [fp(x, z)]
-        for _ in range(4):
-            if rnd.random() < .55:
-                z *= rnd.uniform(1.4, 1.9)
-            else:
-                x += rnd.choice([-1, 1]) * rnd.uniform(.6, 1.6)
-            pts.append(fp(x, z))
-        d = "M" + " L".join(f"{a:.1f},{b:.1f}" for a, b in pts)
-        out.append(f'<path d="{d}" fill="none" stroke="{t["trace"]}" stroke-width="1.4" opacity=".55"/>')
-        out.append(f'<circle cx="{pts[0][0]:.1f}" cy="{pts[0][1]:.1f}" r="3" fill="none" stroke="{t["trace"]}" stroke-width="1.3" opacity=".7"/>')
-        if i % 2 == 0:
-            dur = 4 + i
-            pulses.append(f'<circle r="2.2" fill="{t["accent"]}"><animateMotion dur="{dur}s" repeatCount="indefinite" path="{d}"/>'
-                          f'<animate attributeName="opacity" values="0;1;1;0" dur="{dur}s" repeatCount="indefinite"/></circle>')
-    svg.defs.append(f'<linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{t["bg"]}" stop-opacity="1"/>'
-                    f'<stop offset=".35" stop-color="{t["bg"]}" stop-opacity=".2"/><stop offset="1" stop-color="{t["bg"]}" stop-opacity=".55"/></linearGradient>')
-    svg.add(f'<g opacity=".9">{"".join(out)}<g class="m">{"".join(pulses)}</g></g>'
-            f'<rect x="0" y="{hz}" width="{W}" height="{H - hz}" fill="url(#fl)"/>')
+    for i in range(6):                                   # pins on the two visible sides
+        a = iso(8 + i * 13, 92, 0, ox, oy, s)
+        b = iso(92, 8 + i * 13, 0, ox, oy, s)
+        out.append(f'<line x1="{a[0]:.1f}" y1="{a[1]:.1f}" x2="{a[0] - 5 * s:.1f}" y2="{a[1] + 6 * s:.1f}" stroke="{t["muted"]}" stroke-width="{2.2 * s:.1f}"/>'
+                   f'<line x1="{b[0]:.1f}" y1="{b[1]:.1f}" x2="{b[0] + 5 * s:.1f}" y2="{b[1] + 6 * s:.1f}" stroke="{t["muted"]}" stroke-width="{2.2 * s:.1f}"/>')
+    out.append(iso_box(0, 0, 0, 92, 92, 16, ox, oy, s, t["panel"], t["bg2"], t["line"], t["line2"]))
+    die = [iso(26, 26, 16, ox, oy, s), iso(66, 26, 16, ox, oy, s), iso(66, 66, 16, ox, oy, s), iso(26, 66, 16, ox, oy, s)]
+    out.append(f'<polygon class="s" points="{poly(die)}" fill="{t["accent"]}" opacity=".3"/>')
+    out.append(f'<polygon class="m" points="{poly(die)}" fill="{t["accent"]}" opacity=".12">'
+               + anim("opacity", (0, .12), (1.5, .12), (1.8, .95), (2.6, .35), (7.4, .35), (7.8, .12)) + '</polygon>')
+    c = iso(46, 46, 16, ox, oy, s)
+    out.append(svg.text(c[0], c[1] + 4 * s, "MCU", "mono", 12 * s, t["fg"], "middle", 2))
+    return "".join(out)
 
 
-def bus(svg, t, entry):
-    """Twisted pair from the lower left into the first network layer; the twist flows towards the net."""
-    x0, y0 = BUS0
-    x1, y1 = entry
-    n, turns, amp = 70, 5.5, 9.0
-    dx, dy = x1 - x0, y1 - y0
-    ln = math.hypot(dx, dy)
-    nx, ny = -dy / ln, dx / ln
-    def wire(phase, sign):
-        pts = []
-        for i in range(n + 1):
-            s = i / n
-            a = 2 * math.pi * turns * s - phase
-            off = sign * amp * math.cos(a) * (0.35 + 0.65 * math.sin(math.pi * min(1, s * 1.15)))
-            pts.append((x0 + dx * s + nx * off, y0 + dy * s + ny * off))
-        return "M" + " L".join(f"{a:.1f},{b:.1f}" for a, b in pts)
-    F = 24
-    for sign, col, lab in ((1, t["accent"], "CAN_H"), (-1, t["ai"], "CAN_L")):
-        frames = [wire(2 * math.pi * f / F, sign) for f in range(F)]
-        svg.add(f'<path class="m" d="{frames[0]}" fill="none" stroke="{col}" stroke-width="2.4" stroke-linecap="round" opacity=".9">'
-                f'<animate attributeName="d" values="{";".join(frames + frames[:1])}" dur="1.6s" repeatCount="indefinite"/></path>'
-                f'<path class="s" d="{frames[0]}" fill="none" stroke="{col}" stroke-width="2.4" opacity=".9"/>')
-    svg.add(svg.text(x0 - 8, y0 + 4, "CAN_H", "mono", 11 * LABEL, t["accentText"], "end", 1.5)
-            + svg.text(x0 - 8, y0 + 4 + 16 * LABEL, "CAN_L", "mono", 11 * LABEL, t["aiText"], "end", 1.5))
-    # the CAN FD frame: a glowing capsule with its bits, travelling along the bus every BURST seconds
-    centre = f"M{x0},{y0} L{x1:.1f},{y1:.1f}"
-    bits = "".join(f'<rect x="{-22 + i * 6}" y="-4" width="4" height="8" rx="1" fill="{t["bg"]}" opacity="{.9 if b else .35}"/>'
-                   for i, b in enumerate([1, 0, 1, 1, 0, 1, 0, 0]))
-    kt = f"0;{TRAVEL / BURST:.3f};1"
-    svg.add(f'<g class="m" opacity="0"><rect x="-30" y="-9" width="60" height="18" rx="9" fill="{t["accent"]}"/>{bits}'
-            f'<animateMotion dur="{BURST}s" repeatCount="indefinite" path="{centre}" keyPoints="0;1;1" keyTimes="{kt}" calcMode="linear"/>'
-            f'<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;.04;{TRAVEL / BURST - .03:.3f};{TRAVEL / BURST:.3f};1" dur="{BURST}s" repeatCount="indefinite"/></g>')
-    svg.add(svg.text(x0 + 40, y0 + 34, "CAN FD frame → network input", "mono", 11 * LABEL, t["muted"], ls=1))
+def stage_tokens(svg, t, cx, cy, s):
+    """03: bytes -> tokens: 3 x 3 cubes appear one after another."""
+    out = []
+    cols = [t["ai"], t["accent"], t["live"]]
+    ox, oy = cx - 4 * s, cy - 12 * s
+    order = [(i, j) for j in range(3) for i in range(3)]
+    for n, (i, j) in enumerate(order):
+        col = cols[(i + j) % 3]
+        box = iso_box(i * 24, j * 24, 0, 20, 20, 16 + ((i * 7 + j * 3) % 3) * 6, ox, oy, s * .9, col, t["line2"], t["bg2"], t["panel"])
+        t0 = 2.0 + n * 0.11
+        out.append(f'<g class="m" opacity="0">{box}' + anim("opacity", (0, 0), (t0, 0), (t0 + .15, 1), (7.4, 1), (7.8, 0)) + '</g>')
+        out.append(f'<g class="s">{box}</g>')
+    if s < 1.1:
+        out.append(svg.text(cx, cy - 54 * s, "0x43 0x41 0x4E", "mono", 10.5 * s, t["muted"], "middle"))
+    return "".join(out)
 
 
-def network(svg, t):
-    nodes = net_nodes()
-    idx = {}
-    for i, (li, _) in enumerate(nodes):
-        idx.setdefault(li, []).append(i)
-    edges = [(a, b) for li in range(len(LAYERS) - 1) for a in idx[li] for b in idx[li + 1]]
-    angs = [2 * math.pi * f / N for f in range(N)]
-    P = [[project(p, a) for a in angs] for _, p in nodes]     # P[node][frame] = (x, y, k, z)
-    # edges (depth-shaded)
-    eg, st = [], []
-    for a, b in edges:
-        xs1 = [P[a][f][0] for f in range(N)]
-        ys1 = [P[a][f][1] for f in range(N)]
-        xs2 = [P[b][f][0] for f in range(N)]
-        ys2 = [P[b][f][1] for f in range(N)]
-        op = [0.06 + 0.32 * depth((P[a][f][3] + P[b][f][3]) / 2) for f in range(N)]
-        eg.append(f'<line x1="{xs1[0]:.1f}" y1="{ys1[0]:.1f}" x2="{xs2[0]:.1f}" y2="{ys2[0]:.1f}" stroke="{t["ai"]}" stroke-width="1" stroke-opacity="{op[0]:.2f}">'
-                  f'<animate attributeName="x1" values="{vals(xs1)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                  f'<animate attributeName="y1" values="{vals(ys1)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                  f'<animate attributeName="x2" values="{vals(xs2)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                  f'<animate attributeName="y2" values="{vals(ys2)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                  f'<animate attributeName="stroke-opacity" values="{vals(op, 2)}" dur="{LOOP}s" repeatCount="indefinite"/></line>')
-        st.append(f'<line x1="{xs1[0]:.1f}" y1="{ys1[0]:.1f}" x2="{xs2[0]:.1f}" y2="{ys2[0]:.1f}" stroke="{t["ai"]}" stroke-width="1" stroke-opacity="{op[0]:.2f}"/>')
-    # pulses: in each burst, 5 signals run input -> output after the frame arrives
-    rnd = random.Random(4)
-    tp = [LOOP * f / NP for f in range(NP)]
-    def pos(node, tt):                    # exact projection at time tt
-        return project(nodes[node][1], 2 * math.pi * tt / LOOP)
-    glow = {i: [0.0] * NP for i in range(len(nodes))}
-    pulses = []
-    for p in range(5):
-        xs, ys, ops = [], [], []
-        routes = [[rnd.choice(idx[li]) for li in range(len(LAYERS))] for _ in range(int(LOOP / BURST))]
-        for f, tt in enumerate(tp):
-            b = int(tt // BURST)
-            u = (tt - b * BURST - TRAVEL - p * 0.12) / 2.4      # 0..1 across the 3 hops
-            if 0 <= u <= 1:
-                seg = min(2, int(u * 3))
-                v = u * 3 - seg
-                r = routes[b]
-                a_, c_ = pos(r[seg], tt), pos(r[seg + 1], tt)
-                xs.append(a_[0] + (c_[0] - a_[0]) * v)
-                ys.append(a_[1] + (c_[1] - a_[1]) * v)
-                ops.append(1.0)
-                near = r[seg] if v < .5 else r[seg + 1]
-                glow[near][f] = max(glow[near][f], 1 - abs(v - (0 if v < .5 else 1)) * 2)
-            else:
-                xs.append(CX)
-                ys.append(CY)
-                ops.append(0.0)
-        pulses.append(f'<circle r="3.4" fill="{t["accent"]}" opacity="0">'
-                      f'<animate attributeName="cx" values="{vals(xs)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                      f'<animate attributeName="cy" values="{vals(ys)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                      f'<animate attributeName="opacity" values="{vals(ops, 0)}" dur="{LOOP}s" repeatCount="indefinite" calcMode="discrete"/></circle>')
-    # nodes: far = smaller and fainter; glow halo when a pulse passes
-    nd, nst = [], []
-    for i in range(len(nodes)):
-        xs = [P[i][f][0] for f in range(N)]
-        ys = [P[i][f][1] for f in range(N)]
-        rs = [4.5 + 4.5 * P[i][f][2] ** 2 for f in range(N)]
-        op = [0.35 + 0.65 * depth(P[i][f][3]) for f in range(N)]
-        common = (f'<animate attributeName="cx" values="{vals(xs)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                  f'<animate attributeName="cy" values="{vals(ys)}" dur="{LOOP}s" repeatCount="indefinite"/>')
-        g = [0.0] + [max(glow[i][f - 1], glow[i][f]) for f in range(1, NP)]
-        nd.append(f'<circle cx="{xs[0]:.1f}" cy="{ys[0]:.1f}" r="16" fill="url(#halo)" opacity="0">{common}'
-                  f'<animate attributeName="opacity" values="{vals(g, 2)}" dur="{LOOP}s" repeatCount="indefinite"/></circle>')
-        nd.append(f'<circle cx="{xs[0]:.1f}" cy="{ys[0]:.1f}" r="{rs[0]:.1f}" fill="{t["panel"]}" stroke="{t["ai"]}" stroke-width="2" opacity="{op[0]:.2f}">{common}'
-                  f'<animate attributeName="r" values="{vals(rs)}" dur="{LOOP}s" repeatCount="indefinite"/>'
-                  f'<animate attributeName="opacity" values="{vals(op, 2)}" dur="{LOOP}s" repeatCount="indefinite"/></circle>')
-        nst.append(f'<circle cx="{xs[0]:.1f}" cy="{ys[0]:.1f}" r="{rs[0]:.1f}" fill="{t["panel"]}" stroke="{t["ai"]}" stroke-width="2" opacity="{op[0]:.2f}"/>')
-    svg.defs.append(f'<radialGradient id="halo"><stop offset="0" stop-color="{t["accent"]}" stop-opacity=".9"/>'
-                    f'<stop offset="1" stop-color="{t["accent"]}" stop-opacity="0"/></radialGradient>')
-    svg.add(f'<g class="m">{"".join(eg)}{"".join(nd)}{"".join(pulses)}</g><g class="s">{"".join(st)}{"".join(nst)}</g>')
-    first = [P[i][0] for i in idx[0]]
-    entry = (sum(p[0] for p in first) / len(first) - 34, sum(p[1] for p in first) / len(first) + 22)
-    svg.add(svg.text(CX - 30 * LABEL, NETLAB_Y, "NEURAL NETWORK · RAG", "mono", 11 * LABEL, t["muted"], ls=1.5))
-    return entry
+NET = [3, 4, 4, 2]
+
+
+def stage_net(svg, t, cx, cy, s):
+    """04: a layered network in columns with slight depth; an activation wave sweeps layer by layer."""
+    pos = []
+    for li, n in enumerate(NET):
+        x = cx - 96 * s + li * 64 * s
+        for k in range(n):
+            y = cy - (n - 1) * 26 * s / 2 + k * 26 * s
+            dz = (k - (n - 1) / 2) * 7 * s               # back nodes shift up-right and shrink a little
+            pos.append((li, x + dz * .8, y - dz * .45, 1 - .08 * abs(k - (n - 1) / 2)))
+    out = []
+    for a in pos:
+        for b in pos:
+            if b[0] == a[0] + 1:
+                ta = 3.0 + a[0] * .5
+                v, k_ = kt((0, .22), (ta, .22), (ta + .25, .8), (ta + .7, .22))
+                out.append(f'<line x1="{a[1]:.1f}" y1="{a[2]:.1f}" x2="{b[1]:.1f}" y2="{b[2]:.1f}" stroke="{t["ai"]}" stroke-width="{1.1 * s:.1f}" stroke-opacity=".22">'
+                           f'<animate class="m" attributeName="stroke-opacity" values="{v}" keyTimes="{k_}" dur="{LOOP}s" repeatCount="indefinite"/></line>')
+    for li, x, y, k in pos:
+        ta = 3.0 + li * .5
+        r = 8.5 * s * k
+        out.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" fill="{t["panel"]}" stroke="{t["ai"]}" stroke-width="{2.2 * s:.1f}"/>')
+        out.append(f'<circle class="m" cx="{x:.1f}" cy="{y:.1f}" r="{r * .62:.1f}" fill="{t["accent"]}" opacity="0">'
+                   + anim("opacity", (0, 0), (ta, 0), (ta + .2, 1), (ta + .9, .35), (7.4, .35), (7.8, 0)) + '</circle>')
+        out.append(f'<circle class="s" cx="{x:.1f}" cy="{y:.1f}" r="{r * .62:.1f}" fill="{t["accent"]}" opacity=".35"/>')
+    return "".join(out)
+
+
+def stage_doc(svg, t, cx, cy, s):
+    """05: an upright document with depth; the answer writes itself, then [1] [2] appear."""
+    w, h, sk = 130 * s, 150 * s, 14 * s
+    x0, y0 = cx - w / 2, cy - h / 2 - 6 * s
+    side = [(x0 + w, y0), (x0 + w + sk, y0 - sk * .6), (x0 + w + sk, y0 + h - sk * .6), (x0 + w, y0 + h)]
+    topf = [(x0, y0), (x0 + sk, y0 - sk * .6), (x0 + w + sk, y0 - sk * .6), (x0 + w, y0)]
+    out = [f'<polygon points="{poly(side)}" fill="{t["line2"]}"/><polygon points="{poly(topf)}" fill="{t["line"]}"/>',
+           f'<rect x="{x0:.1f}" y="{y0:.1f}" width="{w:.1f}" height="{h:.1f}" rx="{6 * s:.1f}" fill="{t["panel"]}" stroke="{t["line2"]}" stroke-width="1.4"/>',
+           svg.text(x0 + 12 * s, y0 + 24 * s, "answer", "mono", 11 * s, t["liveText"], ls=1)]
+    for i, f in enumerate([.82, .7, .78, .5]):
+        ly, lw = y0 + (44 + i * 16) * s, round((w - 24 * s) * f, 1)
+        t0 = 5.0 + i * .28
+        out.append(f'<rect class="s" x="{x0 + 12 * s:.1f}" y="{ly:.1f}" width="{lw}" height="{5 * s:.1f}" rx="2" fill="{t["muted"]}" opacity=".6"/>')
+        out.append(f'<rect class="m" x="{x0 + 12 * s:.1f}" y="{ly:.1f}" width="0" height="{5 * s:.1f}" rx="2" fill="{t["muted"]}" opacity=".6">'
+                   + anim("width", (0, 0), (t0, 0), (t0 + .3, lw), (7.4, lw), (7.8, 0)) + '</rect>')
+    for i, lab in enumerate(("[1]", "[2]")):
+        px, py = x0 + 12 * s + i * 40 * s, y0 + h - 30 * s
+        pill = (f'<rect x="{px:.1f}" y="{py:.1f}" width="{32 * s:.1f}" height="{18 * s:.1f}" rx="{9 * s:.1f}" fill="none" stroke="{t["accent"]}" stroke-width="1.4"/>'
+                + svg.text(px + 6 * s, py + 13 * s, lab, "mono", 11 * s, t["accentText"]))
+        t0 = 6.25 + i * .2
+        out.append(f'<g class="s">{pill}</g><g class="m" opacity="0">{pill}' + anim("opacity", (0, 0), (t0, 0), (t0 + .15, 1), (7.4, 1), (7.8, 0)) + '</g>')
+    return "".join(out)
+
+
+def connector(t, a, b, t0, s, vertical=False):
+    """Dashed link between two stages; a packet dot travels it at time t0."""
+    (x1, y1), (x2, y2) = a, b
+    out = f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{t["line2"]}" stroke-width="{1.6 * s:.1f}" stroke-dasharray="4 5"/>'
+    if vertical:
+        hd = f"M{x2 - 6 * s:.1f},{y2 - 8 * s:.1f} L{x2:.1f},{y2:.1f} L{x2 + 6 * s:.1f},{y2 - 8 * s:.1f}"
+    else:
+        hd = f"M{x2 - 8 * s:.1f},{y2 - 6 * s:.1f} L{x2:.1f},{y2:.1f} L{x2 - 8 * s:.1f},{y2 + 6 * s:.1f}"
+    out += f'<path d="{hd}" fill="none" stroke="{t["line2"]}" stroke-width="{1.8 * s:.1f}"/>'
+    out += (f'<circle class="m" r="{4.2 * s:.1f}" cx="{x1:.1f}" cy="{y1:.1f}" fill="{t["accent"]}" opacity="0">'
+            + anim("cx", (0, round(x1, 1)), (t0, round(x1, 1)), (t0 + .45, round(x2, 1)), (t0 + .46, round(x1, 1)))
+            + anim("cy", (0, round(y1, 1)), (t0, round(y1, 1)), (t0 + .45, round(y2, 1)), (t0 + .46, round(y1, 1)))
+            + anim("opacity", (0, 0), (t0, 0), (t0 + .05, 1), (t0 + .45, 1), (t0 + .46, 0)) + '</circle>')
+    return out
+
+
+STAGES = [("01", "CAN FD bits", stage_bus, "accentText"), ("02", "decode", stage_mcu, "accentText"), ("03", "embed", stage_tokens, "aiText"),
+          ("04", "reason", stage_net, "aiText"), ("05", "answer + sources", stage_doc, "liveText")]
+LINK_T = [1.25, 1.75, 2.75, 4.6]                 # when the packet crosses each link
+
+
+def frame(svg, t, W, H):
+    svg.defs.append(f'<radialGradient id="glow" cx="78%" cy="75%" r="60%"><stop offset="0" stop-color="{t["accent"]}" stop-opacity="{t["glow"]}"/>'
+                    f'<stop offset="1" stop-color="{t["accent"]}" stop-opacity="0"/></radialGradient>'
+                    f'<pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="{t["line"]}"/></pattern>'
+                    f'<clipPath id="clip"><rect width="{W}" height="{H}" rx="22"/></clipPath>')
+    svg.add(f'<g clip-path="url(#clip)"><rect width="{W}" height="{H}" fill="{t["bg"]}"/><rect width="{W}" height="{H}" fill="url(#dots)" opacity=".7"/>'
+            f'<rect width="{W}" height="{H}" fill="url(#glow)"/>')
 
 
 def build(mode, t):
+    W, H = 1280, 470
     svg = Svg(W, H, "Moutaz Mohammad, embedded engineer building intelligent systems, from CAN bits to RAG pipelines. "
-                    "Animation: a CAN FD frame travels along a twisted pair into a rotating 3D neural network.", t)
-    svg.defs.append(f'<radialGradient id="glow" cx="80%" cy="42%" r="55%"><stop offset="0" stop-color="{t["accent"]}" stop-opacity="{t["glow"]}"/>'
-                    f'<stop offset="1" stop-color="{t["accent"]}" stop-opacity="0"/></radialGradient>'
-                    f'<linearGradient id="fade" x1="0" x2="1"><stop offset="0" stop-color="{t["bg"]}" stop-opacity=".97"/>'
-                    f'<stop offset=".42" stop-color="{t["bg"]}" stop-opacity=".75"/><stop offset=".6" stop-color="{t["bg"]}" stop-opacity="0"/></linearGradient>'
-                    f'<clipPath id="clip"><rect width="{W}" height="{H}" rx="22"/></clipPath>')
-    svg.add(f'<g clip-path="url(#clip)"><rect width="{W}" height="{H}" fill="{t["bg"]}"/>')
-    floor(svg, t)
-    svg.add(f'<rect width="{W}" height="{H}" fill="url(#glow)"/>')
-    # network first (to know where the bus enters), but drawn after the bus so it sits on top
-    tmp = Svg(W, H, "", t)
-    entry = network(tmp, t)
-    bus(svg, t, entry)
-    svg.parts += tmp.parts
-    svg.defs += tmp.defs
-    for k in svg.chars:
-        svg.chars[k] |= tmp.chars[k]
-    svg.add(f'<rect width="{W * .62:.0f}" height="{H}" fill="url(#fade)"/>')
-    # crisp 2D text on top
-    svg.add(svg.text(64, 92, "● WOLFENBÜTTEL, GERMANY", "mono", 13, t["accentText"], ls=3))
-    svg.add(svg.text(60, 162, "Moutaz Mohammad", "display", 62, t["fg"]))
-    svg.add(svg.text(64, 208, "Embedded engineer building intelligent systems", "body", 24, t["fg"]))
-    svg.add(svg.text(64, 242, "from CAN bits to RAG pipelines.", "body", 24, t["accentText"]))
-    x = 64
-    for lab in ("AUTOMOTIVE NETWORKS", "LINUX & INFRASTRUCTURE", "APPLIED AI"):
-        wch = len(lab) * 8.7 + 28
-        svg.add(f'<rect x="{x}" y="272" width="{wch:.0f}" height="30" rx="15" fill="{t["panel"]}" stroke="{t["line2"]}"/>')
-        svg.add(svg.text(x + 14, 292, lab, "mono", 12.5, t["muted"], ls=1))
-        x += wch + 10
+                    "Animation in five stages: a CAN FD frame is decoded by a microcontroller, its bytes become tokens, "
+                    "a layered network reasons over them, and an answer with sources is written.", t)
+    frame(svg, t, W, H)
+    svg.add(svg.text(64, 70, "● WOLFENBÜTTEL, GERMANY", "mono", 13, t["accentText"], ls=3))
+    svg.add(svg.text(60, 132, "Moutaz Mohammad", "display", 60, t["fg"]))
+    svg.add(svg.text(64, 174, "Embedded engineer building intelligent systems", "body", 23, t["fg"]))
+    svg.add(svg.text(64, 206, "from CAN bits to RAG pipelines.", "body", 23, t["accentText"]))
+    svg.add(f'<line x1="64" y1="238" x2="{W - 64}" y2="238" stroke="{t["line"]}" stroke-width="1"/>')
+    xs, cy = [150, 400, 600, 812, 1090], 330
+    for i, (num, lab, fn, col) in enumerate(STAGES):
+        svg.add(fn(svg, t, xs[i], cy, 1.0))
+        svg.add(svg.text(xs[i], 446, f"{num}  {lab}", "mono", 13, t[col], "middle", 1.5))
+    ends = [(250, cy), (334, cy), (474, cy), (540, cy), (668, cy), (704, cy), (922, cy), (1012, cy)]
+    for i in range(4):
+        svg.add(connector(t, ends[2 * i], ends[2 * i + 1], LINK_T[i], 1.0))
     svg.add(f'<rect x=".75" y=".75" width="{W - 1.5}" height="{H - 1.5}" rx="21.5" fill="none" stroke="{t["line2"]}" stroke-width="1.5"/></g>')
     return svg.render()
 
 
 def build_m(mode, t):
-    """Phone hero (640 x 600): text on top, the same 3D scene below it."""
-    global W, H, CX, CY, S, HZ, BUS0, LABEL, NETLAB_Y
-    saved = (W, H, CX, CY, S, HZ, BUS0, LABEL, NETLAB_Y)
-    W, H, CX, CY, S, HZ, BUS0, LABEL, NETLAB_Y = 640, 600, 420, 410, 82, 380, (150, 520), 1.6, 578
-    try:
-        svg = Svg(W, H, "Moutaz Mohammad, embedded engineer building intelligent systems, from CAN bits to RAG pipelines.", t)
-        svg.defs.append(f'<radialGradient id="glow" cx="65%" cy="68%" r="60%"><stop offset="0" stop-color="{t["accent"]}" stop-opacity="{t["glow"]}"/>'
-                        f'<stop offset="1" stop-color="{t["accent"]}" stop-opacity="0"/></radialGradient>'
-                        f'<linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{t["bg"]}" stop-opacity=".97"/>'
-                        f'<stop offset=".38" stop-color="{t["bg"]}" stop-opacity=".8"/><stop offset=".5" stop-color="{t["bg"]}" stop-opacity="0"/></linearGradient>'
-                        f'<clipPath id="clip"><rect width="{W}" height="{H}" rx="22"/></clipPath>')
-        svg.add(f'<g clip-path="url(#clip)"><rect width="{W}" height="{H}" fill="{t["bg"]}"/>')
-        floor(svg, t)
-        svg.add(f'<rect width="{W}" height="{H}" fill="url(#glow)"/>')
-        tmp = Svg(W, H, "", t)
-        entry = network(tmp, t)
-        bus(svg, t, entry)
-        svg.parts += tmp.parts
-        svg.defs += tmp.defs
-        for k in svg.chars:
-            svg.chars[k] |= tmp.chars[k]
-        svg.add(f'<rect width="{W}" height="{H}" fill="url(#fade)"/>')
-        svg.add(svg.text(34, 58, "● WOLFENBÜTTEL, GERMANY", "mono", 18, t["accentText"], ls=2.5))
-        svg.add(svg.text(30, 122, "Moutaz Mohammad", "display", 58, t["fg"]))
-        svg.add(svg.text(34, 170, "Embedded engineer building", "body", 28, t["fg"]))
-        svg.add(svg.text(34, 206, "intelligent systems", "body", 28, t["fg"]))
-        svg.add(svg.text(34, 246, "from CAN bits to RAG pipelines.", "body", 28, t["accentText"]))
-        svg.add(f'<rect x=".75" y=".75" width="{W - 1.5}" height="{H - 1.5}" rx="21.5" fill="none" stroke="{t["line2"]}" stroke-width="1.5"/></g>')
-        return svg.render()
-    finally:
-        W, H, CX, CY, S, HZ, BUS0, LABEL, NETLAB_Y = saved
+    W, H = 640, 1130
+    svg = Svg(W, H, "Moutaz Mohammad, embedded engineer building intelligent systems, from CAN bits to RAG pipelines, in five stages.", t)
+    frame(svg, t, W, H)
+    svg.add(svg.text(34, 58, "● WOLFENBÜTTEL, GERMANY", "mono", 18, t["accentText"], ls=2.5))
+    svg.add(svg.text(30, 122, "Moutaz Mohammad", "display", 58, t["fg"]))
+    svg.add(svg.text(34, 170, "Embedded engineer building", "body", 28, t["fg"]))
+    svg.add(svg.text(34, 206, "intelligent systems", "body", 28, t["fg"]))
+    svg.add(svg.text(34, 246, "from CAN bits to RAG pipelines.", "body", 28, t["accentText"]))
+    svg.add(f'<line x1="34" y1="276" x2="{W - 34}" y2="276" stroke="{t["line"]}"/>')
+    ys = [345, 505, 690, 855, 1025]
+    for i, (num, lab, fn, col) in enumerate(STAGES):
+        svg.add(fn(svg, t, 400, ys[i], 1.25 if i != 4 else 1.05))
+        svg.add(svg.text(34, ys[i] - 30, num, "mono", 22, t[col], ls=2))
+        svg.add(svg.text(34, ys[i], lab, "mono", 20, t[col], ls=1.5))
+    links = [((400, 418), (400, 446)), ((400, 588), (400, 632)), ((400, 742), (400, 800)), ((400, 912), (400, 932))]
+    for i, (a, b) in enumerate(links):
+        svg.add(connector(t, a, b, LINK_T[i], 1.2, vertical=True))
+    svg.add(f'<rect x=".75" y=".75" width="{W - 1.5}" height="{H - 1.5}" rx="21.5" fill="none" stroke="{t["line2"]}" stroke-width="1.5"/></g>')
+    return svg.render()
 
 
 def main():
