@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="46" viewBox="0 0 1280 46" role="img" aria-label="CAN FD">
+<text x="0" y="30.6" font-family="'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="15" letter-spacing="4.1" fill="#d24f1b">// CAN FD</text>
+<line x1="141" y1="25.3" x2="1280" y2="25.3" stroke="#b4a07a" stroke-width="1.2"/>
+<circle r="3.0" cy="25.3" fill="#d24f1b"><animate attributeName="cx" values="141;1280;1280" keyTimes="0;.7;1" dur="4.5s" repeatCount="indefinite"/></circle>
+</svg>

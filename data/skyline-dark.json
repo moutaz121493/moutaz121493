@@ -1,0 +1,17 @@
+{
+  "type": "normal",
+  "fileName": "skyline-dark.svg",
+  "backgroundColor": "#060a0f",
+  "foregroundColor": "#e8eff3",
+  "strongColor": "#f5b83f",
+  "weakColor": "#8d9ca8",
+  "radarColor": "#4fd1ff",
+  "growingAnimation": true,
+  "contribColors": [
+    "#1f2c37",
+    "#1d6f8f",
+    "#4fd1ff",
+    "#45e08f",
+    "#f5b83f"
+  ]
+}

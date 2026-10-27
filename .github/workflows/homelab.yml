@@ -1,0 +1,33 @@
+name: homelab
+# Every 2 h: draw the homelab card from live.json, which the Raspberry Pi publishes hourly to the branch "live"
+# (aggregate numbers only). If the Pi has gone quiet for > 3 h the card says "last seen X h ago".
+on:
+  schedule:
+    - cron: "25 */2 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: homelab
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - run: pip install -r scripts/requirements.txt
+      - name: fetch live.json
+        run: |
+          git fetch --depth=1 origin live
+          git show origin/live:live.json > data/live.json
+      - run: cd scripts && python homelab.py
+      - name: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/homelab-*.svg
+          git diff --cached --quiet || (git commit -m "chore(homelab): refresh card [skip ci]" && git push)

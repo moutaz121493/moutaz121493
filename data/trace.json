@@ -1,0 +1,16 @@
+{
+  "_comment": "Edit freely: the thesis-trace terminal on the profile is drawn from this file (scripts/trace.py). Keep it factual.",
+  "title": "// THESIS TRACE · CROSS-LINGUAL RAG",
+  "prompt": "home-rag",
+  "example_query": null,
+  "example_query_TODO": "Optional: put one real example question here (Latin letters, e.g. a transliteration or English gloss). Until then a neutral placeholder is shown.",
+  "steps": [
+    {"cmd": "ask --lang ar", "arg": "QUERY", "out": "question in Arabic about a German document"},
+    {"cmd": "route", "arg": "", "out": "documents (numeric questions go to predefined, parameterised queries, never free SQL)"},
+    {"cmd": "retrieve --keyword", "arg": "", "out": "exact names and invoice numbers"},
+    {"cmd": "retrieve --vector", "arg": "", "out": "multilingual embeddings, run locally: documents never leave the house"},
+    {"cmd": "fuse --rrf", "arg": "", "out": "reciprocal rank fusion -> top-k passages"},
+    {"cmd": "answer --cite", "arg": "", "out": "answer in Arabic, with sources"},
+    {"cmd": "eval", "arg": "", "out": "Recall@k · MRR · faithfulness · latency · cost per question"}
+  ]
+}

@@ -1,0 +1,29 @@
+name: assets
+# Rebuilds the generated images (hero, CAN FD decoder, isometric cards, thesis trace, sections) when their sources change.
+on:
+  push:
+    branches: [main]
+    paths: ["scripts/**", "data/trace.json", "assets/theme.json", "Makefile", ".github/workflows/assets.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: assets
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - run: pip install -r scripts/requirements.txt
+      - run: make assets
+      - name: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets
+          git diff --cached --quiet || (git commit -m "chore(assets): rebuild generated images [skip ci]" && git push)
