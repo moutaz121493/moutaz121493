@@ -15,6 +15,12 @@ I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual (A
 
 > **Where I'm heading:** AI engineering, with the discipline of embedded work behind it. Measured, secure, and built to keep running.
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-now-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-now-light.svg"><img alt="Now" src="assets/div-now-dark.svg"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/now-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/now-light.svg"><img alt="Now: studying an M.Sc. with a thesis on cross-lingual RAG; learning a structured AI-engineering path; building a measurable RAG system over my own documents" src="assets/now-dark.svg"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-homelab-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-homelab-light.svg"><img alt="Homelab" src="assets/div-homelab-dark.svg"></picture>
+
 <a href="https://moutazm.com/projects/moutaz-home/"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/moutaz121493/moutaz121493/live/live-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/moutaz121493/moutaz121493/live/live-light.svg"><img alt="Homelab live status, published hourly by the Raspberry Pi itself" src="https://raw.githubusercontent.com/moutaz121493/moutaz121493/live/live-dark.svg"></picture></a>
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-selected-work-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-selected-work-light.svg"><img alt="Selected work" src="assets/div-selected-work-dark.svg"></picture>
@@ -35,6 +41,10 @@ I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual (A
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-toolbox-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-toolbox-light.svg"><img alt="Toolbox" src="assets/div-toolbox-dark.svg"></picture>
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/stack-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/stack-light.svg"><img alt="Toolbox: CAN / CAN FD, ISO 16845-1, MCU drivers, bit timing & TDC, LIN, Automotive Ethernet; Python, test automation; Debian, Docker Compose, systemd, Cloudflare, Tailscale, restic, Uptime Kuma; RAG, Claude, Gemini, structured output, evaluation" src="assets/stack-dark.svg"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-journey-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-journey-light.svg"><img alt="Journey" src="assets/div-journey-dark.svg"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/journey-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/journey-light.svg"><img alt="Journey: B.Sc. Communications & Electronics Engineering 2014-2019, Test Engineer for automotive networks since 2022, self-hosted homelab with LLM automation, M.Sc. Web Technologies expected 2027" src="assets/journey-dark.svg"></picture>
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-contact-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-contact-light.svg"><img alt="Contact" src="assets/div-contact-dark.svg"></picture>
 

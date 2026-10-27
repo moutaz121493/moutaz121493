@@ -258,14 +258,62 @@ def footer(t):
 </svg>'''
 
 
+NOW = [("STUDYING", "M.Sc. Web Technologies: thesis on cross-lingual RAG (Arabic ↔ German).", "ai"),
+       ("LEARNING", "Structured AI-engineering path: IBM AI Engineering, then Google Cloud ML Engineer.", "accent"),
+       ("BUILDING", "A measurable RAG system over my own documents, with an evaluation set and experiments.", "live")]
+
+
+def now_board(t):
+    w, h, gap = 1280, 176, 18
+    cw = (w - 2 * gap) / 3
+    out = []
+    for i, (k, v, col) in enumerate(NOW):
+        x = i * (cw + gap)
+        lines = wrap(v, 38)[:3]
+        out.append(f'''<g><rect x="{x + .75:.1f}" y=".75" width="{cw - 1.5:.1f}" height="{h - 1.5}" rx="16" fill="{t["panel"]}" stroke="{t["line2"]}" stroke-width="1.5"/>
+<rect x="{x:.1f}" y="20" width="4" height="{h - 40}" fill="{t[col]}"/>
+<circle cx="{x + 32:.1f}" cy="40" r="5" fill="{t[col]}"><animate attributeName="opacity" values="1;.3;1" dur="{1.6 + i * .4:.1f}s" repeatCount="indefinite"/></circle>
+<text x="{x + 46:.1f}" y="45" font-family="{MONO}" font-size="13" letter-spacing="3" fill="{t[col]}">{k}</text>
+<g font-family="{BODY}" font-size="17" fill="{t["fg"]}">{"".join(f'<text x="{x + 26:.1f}" y="{82 + j * 26}">{E(l)}</text>' for j, l in enumerate(lines))}</g></g>''')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Now: studying, learning, building">{"".join(out)}</svg>'
+
+
+JOURNEY = [("2014 – 2019", "B.Sc. Communications &", "Electronics Engineering", "muted", False),
+           ("since 2022", "Test Engineer, automotive", "networks · CAN / CAN FD", "accent", False),
+           ("today", "Self-hosted homelab +", "LLM automation on a Pi 5", "live", False),
+           ("2027 · expected", "M.Sc. Web Technologies", "thesis: cross-lingual RAG", "ai", True)]
+
+
+def journey(t):
+    w, h = 1280, 190
+    x0, x1, y = 175, w - 175, 70
+    n = len(JOURNEY)
+    xs = [x0 + (x1 - x0) * i / (n - 1) for i in range(n)]
+    out = [f'<rect x=".75" y=".75" width="{w - 1.5}" height="{h - 1.5}" rx="18" fill="{t["panel"]}" stroke="{t["line2"]}" stroke-width="1.5"/>',
+           f'<line x1="{x0}" y1="{y}" x2="{xs[-2]:.0f}" y2="{y}" stroke="{t["line2"]}" stroke-width="3"/>',
+           f'<line x1="{xs[-2]:.0f}" y1="{y}" x2="{x1}" y2="{y}" stroke="{t["line2"]}" stroke-width="3" stroke-dasharray="6 7"/>',
+           f'<line x1="{x0}" y1="{y}" x2="{xs[-2]:.0f}" y2="{y}" stroke="{t["accent"]}" stroke-width="3" stroke-dasharray="{xs[-2] - x0:.0f}" stroke-dashoffset="{xs[-2] - x0:.0f}"><animate attributeName="stroke-dashoffset" from="{xs[-2] - x0:.0f}" to="0" dur="2.4s" fill="freeze"/></line>']
+    for i, (when, a, b, col, future) in enumerate(JOURNEY):
+        x = xs[i]
+        out.append(f'<circle cx="{x:.0f}" cy="{y}" r="11" fill="{t["panel"]}" stroke="{t[col]}" stroke-width="4"'
+                   + (' stroke-dasharray="4 4"' if future else "") + "/>"
+                   + (f'<circle cx="{x:.0f}" cy="{y}" r="11" fill="none" stroke="{t[col]}" stroke-width="2"><animate attributeName="r" values="11;22" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".8;0" dur="1.8s" repeatCount="indefinite"/></circle>' if i == n - 2 else "")
+                   + f'<text x="{x:.0f}" y="{y - 26}" text-anchor="middle" font-family="{MONO}" font-size="13" letter-spacing="1.5" fill="{t[col]}">{E(when)}</text>'
+                   + f'<text x="{x:.0f}" y="{y + 46}" text-anchor="middle" font-family="{BODY}" font-size="17" font-weight="600" fill="{t["fg"]}">{E(a)}</text>'
+                   + f'<text x="{x:.0f}" y="{y + 70}" text-anchor="middle" font-family="{BODY}" font-size="15" fill="{t["muted"]}">{E(b)}</text>')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Journey: B.Sc. 2014-2019, test engineer since 2022, homelab and LLM automation, M.Sc. 2027">{"".join(out)}</svg>'
+
+
 def main():
     for mode, t in THEMES.items():
         save(f"banner-{mode}.svg", banner(t, mode))
         save(f"stack-{mode}.svg", stack(t))
         save(f"footer-{mode}.svg", footer(t))
+        save(f"now-{mode}.svg", now_board(t))
+        save(f"journey-{mode}.svg", journey(t))
         for n, (slug, title, text, status, tags, icon) in enumerate(CARDS, 1):
             save(f"card-{slug}-{mode}.svg", card(t, title, text, status, tags, icon, n))
-        for lab in ("SELECTED WORK", "TOOLBOX", "ABOUT", "CONTACT", "HOMELAB"):
+        for lab in ("SELECTED WORK", "TOOLBOX", "ABOUT", "CONTACT", "HOMELAB", "NOW", "JOURNEY"):
             save(f"div-{lab.lower().replace(' ', '-')}-{mode}.svg", divider(t, lab))
     print("wrote", len(os.listdir(OUT)), "files to", OUT)
 
