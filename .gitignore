@@ -2,3 +2,4 @@ data/live.json
 __pycache__/
 .preview*.html
 .preview/
+assets/linkedin-banner-*

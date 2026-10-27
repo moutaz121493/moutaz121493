@@ -4,9 +4,9 @@
 PYTHON ?= python3
 S = scripts
 
-.PHONY: assets hero canfd iso trace sections homelab activity readme
+.PHONY: assets hero canfd iso trace sections homelab activity readme thesis
 
-assets: hero canfd iso trace sections readme
+assets: hero canfd iso trace sections thesis readme
 
 hero:
 	cd $(S) && $(PYTHON) hero3d.py
@@ -24,3 +24,5 @@ activity:
 	cd $(S) && $(PYTHON) activity.py
 readme:
 	cd $(S) && $(PYTHON) readme.py
+thesis:
+	cd $(S) && $(PYTHON) thesis.py

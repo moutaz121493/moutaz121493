@@ -3,7 +3,7 @@ name: assets
 on:
   push:
     branches: [main]
-    paths: ["scripts/**", "data/trace.json", "assets/theme.json", "Makefile", ".github/workflows/assets.yml"]
+    paths: ["scripts/**", "data/trace.json", "data/thesis.json", "assets/theme.json", "Makefile", ".github/workflows/assets.yml"]
   workflow_dispatch:
 permissions:
   contents: write

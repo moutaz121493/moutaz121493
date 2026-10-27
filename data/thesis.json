@@ -1,0 +1,7 @@
+{
+  "_comment": "Thesis results card (scripts/thesis.py). Stays hidden while 'results' is empty. Fill in REAL measured numbers only.",
+  "title": "// THESIS RESULTS · CROSS-LINGUAL RAG",
+  "eval_set": "",
+  "results": [],
+  "_example_result": {"metric": "Recall@5", "value": "0.00", "baseline": "keyword only: 0.00", "note": "hybrid + RRF"}
+}

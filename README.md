@@ -11,6 +11,11 @@
   <img alt="Open to embedded, networking and applied-AI roles" src="https://img.shields.io/badge/open_to-embedded_·_networking_·_applied_AI-8d9ca8?style=for-the-badge&labelColor=0b1118">
 </p>
 
+<p align="center">
+  <a href="https://moutazm.com/cv/moutaz-mohammad-cv-en.pdf"><img alt="CV in English (PDF)" src="https://img.shields.io/badge/CV-English_·_PDF-e8eff3?style=for-the-badge&labelColor=0b1118&logo=readdotcv&logoColor=e8eff3"></a>
+  <a href="https://moutazm.com/cv/moutaz-mohammad-cv-de.pdf"><img alt="Lebenslauf auf Deutsch (PDF)" src="https://img.shields.io/badge/Lebenslauf-Deutsch_·_PDF-e8eff3?style=for-the-badge&labelColor=0b1118&logo=readdotcv&logoColor=e8eff3"></a>
+</p>
+
 <picture><source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/div-about-m-dark.svg"><source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="assets/div-about-m-light.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/div-about-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-about-light.svg"><img alt="About" src="assets/div-about-dark.svg"></picture>
 
 I test, debug and bring up **automotive in-vehicle networks (CAN / CAN FD)** at an ISO/IEC 17025-accredited test house in Germany.
@@ -18,6 +23,22 @@ In my own time I run a small **self-hosted infrastructure** on a Raspberry Pi an
 I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual (Arabic / German) **retrieval-augmented generation**.
 
 > **Where I'm heading:** AI engineering, with the discipline of embedded work behind it. Measured, secure, and built to keep running.
+
+<details>
+<summary><b>🇩🇪 Auf Deutsch</b></summary>
+<br>
+
+**Embedded-Ingenieur, der intelligente Systeme baut – von CAN-Bits bis zu RAG-Pipelines.**
+
+Ich habe Nachrichtentechnik und Elektronik studiert und bin in die Welt der Fahrzeugnetzwerke gewechselt: CAN, CAN FD und die Controller und Treiber darunter. Seit 2022 teste, debugge und bringe ich diese Netzwerke bei einem spezialisierten Prüfhaus in Deutschland in Betrieb.
+
+In meiner Freizeit habe ich eine kleine selbst gehostete Infrastruktur auf einem Raspberry Pi aufgebaut: Zero-Trust-Zugriff, verschlüsselte 3-2-1-Backups mit Restore-Tests, Monitoring und LLM-gestützte Automatisierung, die meine Dokumente ablegt und Ausfälle selbst diagnostiziert.
+
+Dahin geht mein Weg: AI Engineering – mit der Disziplin aus der Embedded-Welt. Messbar, sicher und gebaut, um dauerhaft zu laufen.
+
+Offen für Gespräche über Rollen in Embedded, Networking und angewandter KI in Deutschland. · [Lebenslauf (PDF)](https://moutazm.com/cv/moutaz-mohammad-cv-de.pdf) · [moutazm.com/de](https://moutazm.com/de/)
+
+</details>
 
 <picture><source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/div-now-m-dark.svg"><source media="(max-width: 600px) and (prefers-color-scheme: light)" srcset="assets/div-now-m-light.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/div-now-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-now-light.svg"><img alt="Now" src="assets/div-now-dark.svg"></picture>
 
