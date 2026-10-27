@@ -235,7 +235,7 @@ def footer(t):
     for lab, n, col in fields:
         bw = n * unit
         boxes.append(f'<rect x="{x:.1f}" y="30" width="{bw - 4:.1f}" height="40" rx="7" fill="{t["bg2"]}" stroke="{col}" stroke-width="1.3"/>'
-                     (f'<text x="{x + bw / 2 - 2:.1f}" y="55" text-anchor="middle" font-family="{MONO}" font-size="{12 if n > 3 else 9.5}" fill="{col}">{E(lab)}</text>' if bw > 9.5 * len(lab) * .62 + 6 else ""))
+                     + (f'<text x="{x + bw / 2 - 2:.1f}" y="55" text-anchor="middle" font-family="{MONO}" font-size="{12 if n > 3 else 9.5}" fill="{col}">{E(lab)}</text>' if bw > 9.5 * len(lab) * .62 + 6 else ""))
         x += bw
     bits = "0" + format(0x4D4, "011b") + "000" + "0101" + "".join(format(ord(c), "08b") for c in "HELLO") + "101100111010011" + "11" + "1111111"
     step, y1, y0 = 9, 96, 116
