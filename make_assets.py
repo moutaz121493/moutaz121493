@@ -224,13 +224,48 @@ def divider(t, label):
 </svg>'''
 
 
+def footer(t):
+    """A CAN data frame whose payload spells HELLO, with the bit stream scrolling underneath."""
+    w, h = 1280, 150
+    fields = [("SOF", 1, t["muted"]), ("ID 0x4D4", 11, t["accent"]), ("RTR", 1, t["muted"]), ("IDE r0", 2, t["muted"]),
+              ("DLC 5", 4, t["ai"]), ('DATA 48 45 4C 4C 4F  "HELLO"', 40, t["live"]), ("CRC", 15, t["muted"]),
+              ("ACK", 2, t["muted"]), ("EOF", 7, t["muted"])]
+    total = sum(f[1] for f in fields)
+    x, unit, boxes = 40, (w - 80) / total, []
+    for lab, n, col in fields:
+        bw = n * unit
+        boxes.append(f'<rect x="{x:.1f}" y="30" width="{bw - 4:.1f}" height="40" rx="7" fill="{t["bg2"]}" stroke="{col}" stroke-width="1.3"/>'
+                     (f'<text x="{x + bw / 2 - 2:.1f}" y="55" text-anchor="middle" font-family="{MONO}" font-size="{12 if n > 3 else 9.5}" fill="{col}">{E(lab)}</text>' if bw > 9.5 * len(lab) * .62 + 6 else ""))
+        x += bw
+    bits = "0" + format(0x4D4, "011b") + "000" + "0101" + "".join(format(ord(c), "08b") for c in "HELLO") + "101100111010011" + "11" + "1111111"
+    step, y1, y0 = 9, 96, 116
+    d, px = [f"M0,{y1 if bits[0] == '1' else y0}"], 0
+    for b in bits * 3:
+        y = y1 if b == "1" else y0
+        d += [f"L{px},{y}", f"L{px + step},{y}"]
+        px += step
+    period = len(bits) * step
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="A CAN frame whose data bytes spell HELLO. Thanks for visiting.">
+<defs><clipPath id="c"><rect x="40" y="80" width="{w - 80}" height="50"/></clipPath>
+<linearGradient id="f" x1="0" x2="1"><stop offset="0" stop-color="{t["bg"]}" stop-opacity="1"/><stop offset=".08" stop-color="{t["bg"]}" stop-opacity="0"/><stop offset=".92" stop-color="{t["bg"]}" stop-opacity="0"/><stop offset="1" stop-color="{t["bg"]}" stop-opacity="1"/></linearGradient></defs>
+<rect width="{w}" height="{h}" rx="18" fill="{t["bg"]}"/>
+{"".join(boxes)}
+<g clip-path="url(#c)"><path d="{" ".join(d)}" fill="none" stroke="{t["accent"]}" stroke-width="2" stroke-linejoin="round">
+<animateTransform attributeName="transform" type="translate" from="0 0" to="-{period} 0" dur="9s" repeatCount="indefinite"/></path></g>
+<rect x="40" y="80" width="{w - 80}" height="50" fill="url(#f)"/>
+<text x="{w - 40}" y="{h - 4}" text-anchor="end" font-family="{MONO}" font-size="11" fill="{t["muted"]}">0x48 0x45 0x4C 0x4C 0x4F = HELLO · thanks for visiting</text>
+<rect x=".75" y=".75" width="{w - 1.5}" height="{h - 1.5}" rx="17.5" fill="none" stroke="{t["line2"]}" stroke-width="1.5"/>
+</svg>'''
+
+
 def main():
     for mode, t in THEMES.items():
         save(f"banner-{mode}.svg", banner(t, mode))
         save(f"stack-{mode}.svg", stack(t))
+        save(f"footer-{mode}.svg", footer(t))
         for n, (slug, title, text, status, tags, icon) in enumerate(CARDS, 1):
             save(f"card-{slug}-{mode}.svg", card(t, title, text, status, tags, icon, n))
-        for lab in ("SELECTED WORK", "TOOLBOX", "ABOUT", "CONTACT"):
+        for lab in ("SELECTED WORK", "TOOLBOX", "ABOUT", "CONTACT", "HOMELAB"):
             save(f"div-{lab.lower().replace(' ', '-')}-{mode}.svg", divider(t, lab))
     print("wrote", len(os.listdir(OUT)), "files to", OUT)
 

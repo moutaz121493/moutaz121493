@@ -15,6 +15,8 @@ I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual (A
 
 > **Where I'm heading:** AI engineering, with the discipline of embedded work behind it. Measured, secure, and built to keep running.
 
+<a href="https://moutazm.com/projects/moutaz-home/"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/moutaz121493/moutaz121493/live/live-dark.svg"><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/moutaz121493/moutaz121493/live/live-light.svg"><img alt="Homelab live status, published hourly by the Raspberry Pi itself" src="https://raw.githubusercontent.com/moutaz121493/moutaz121493/live/live-dark.svg"></picture></a>
+
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-selected-work-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-selected-work-light.svg"><img alt="Selected work" src="assets/div-selected-work-dark.svg"></picture>
 
 <p>
@@ -38,3 +40,5 @@ I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual (A
 
 🌍 Arabic (native) · English (C1) · German (B2)  
 📫 [moutazm.com](https://moutazm.com) · [LinkedIn](https://www.linkedin.com/in/moutaz-mohammad-728356347/) · moutaz@moutazm.com · open to conversations about embedded, networking and applied-AI roles in Germany.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/footer-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/footer-light.svg"><img alt="A CAN frame whose data bytes spell HELLO. Thanks for visiting." src="assets/footer-dark.svg"></picture>
