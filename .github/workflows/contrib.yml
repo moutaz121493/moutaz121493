@@ -32,4 +32,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/skyline-*.svg
-          git diff --cached --quiet || (git commit -m "chore(contrib): daily skyline [skip ci]" && git push)
+          git diff --cached --quiet || (git commit -m "chore(contrib): daily skyline [skip ci]" && for i in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep $((i * 4)); done)

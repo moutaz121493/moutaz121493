@@ -30,4 +30,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/homelab-*.svg
-          git diff --cached --quiet || (git commit -m "chore(homelab): refresh card [skip ci]" && git push)
+          git diff --cached --quiet || (git commit -m "chore(homelab): refresh card [skip ci]" && for i in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep $((i * 4)); done)
