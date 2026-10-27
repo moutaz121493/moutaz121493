@@ -25,11 +25,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USERNAME: ${{ github.repository_owner }}
           SETTING_JSON: data/skyline-light.json
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: contribution count -> README (skyline shown from 300 contributions)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api graphql -f query='query($u:String!){ user(login:$u){ contributionsCollection{ contributionCalendar{ totalContributions } } } }' \
+            -f u="${{ github.repository_owner }}" --jq '{total: .data.user.contributionsCollection.contributionCalendar.totalContributions}' > data/contrib.json
+          cat data/contrib.json
+          cd scripts && python readme.py
       - name: commit
         run: |
           mv profile-3d-contrib/skyline-dark.svg profile-3d-contrib/skyline-light.svg assets/
           rm -rf profile-3d-contrib
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/skyline-*.svg
+          git add assets/skyline-*.svg data/contrib.json README.md
           git diff --cached --quiet || (git commit -m "chore(contrib): daily skyline [skip ci]" && for i in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep $((i * 4)); done)

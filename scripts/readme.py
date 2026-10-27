@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """Writes README.md: every image as <picture> with dark/light sources, plus phone sources (max-width: 600px)
 where a compact "-m" variant exists. Edit the text here, then run `make readme`."""
+import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 A = os.path.join(ROOT, "assets")
 S = "https://moutazm.com/projects/"
 PHONE = "(max-width: 600px)"
+SKYLINE_MIN = 300          # the 3D contribution skyline only appears from this many contributions in the last year
+
+
+def contributions():
+    """data/contrib.json is written by the contrib workflow; missing file = hide the skyline."""
+    try:
+        return json.load(open(os.path.join(ROOT, "data", "contrib.json"))).get("total", 0)
+    except (OSError, ValueError):
+        return 0
 
 
 def pic(name, alt, width=None, href=None):
@@ -30,6 +40,8 @@ CARDS = [("diag-agent", "diag-agent: a home server that diagnoses its own outage
 
 
 def main():
+    skyline = (pic("div-contributions", "Contributions") + "\n\n" + pic("skyline", "3D contribution calendar") + "\n\n"
+               if contributions() >= SKYLINE_MIN else "")
     rows = "".join("<p>\n  " + "\n  ".join(pic("card3d-" + s, a, "49%", h) for s, a, h in CARDS[i:i + 2]) + "\n</p>\n" for i in range(0, 6, 2))
     md = f'''{pic("hero", "Moutaz Mohammad: embedded engineer building intelligent systems, from CAN bits to RAG pipelines. A CAN FD frame travels along a twisted pair into a rotating 3D neural network.", href="https://moutazm.com/3d/")}
 
@@ -73,11 +85,7 @@ I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual (A
 
 {pic("activity", "Latest public GitHub activity: commits in the last 30 days, recently pushed repositories and language mix")}
 
-{pic("div-contributions", "Contributions")}
-
-{pic("skyline", "3D contribution calendar")}
-
-{pic("div-toolbox", "Toolbox")}
+{skyline}{pic("div-toolbox", "Toolbox")}
 
 {pic("stack", "Toolbox: CAN / CAN FD, ISO 16845-1, MCU drivers, bit timing and TDC, LIN, Automotive Ethernet; Python, test automation; Debian, Docker Compose, systemd, Cloudflare, Tailscale, restic, Uptime Kuma; RAG, Claude, Gemini, structured output, evaluation")}
 
