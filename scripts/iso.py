@@ -191,8 +191,8 @@ def now(t):
 CARDS = [
     ("diag-agent", "diag-agent", "A server that diagnoses its own outages: redacted evidence, an LLM with no tools, one alert with cause and fix.",
      "OPEN SOURCE", "accent", ["Python", "systemd", "LLM", "Uptime Kuma"], ill_monitor),
-    ("can-tools", "CAN FD bit timing", "Finds valid nominal and data-phase bit timings for M_CAN-style controllers, entirely in the browser.",
-     "IN THE BROWSER", "ai", ["CAN FD", "TDC", "JavaScript"], ill_scope),
+    ("can-tools", "canfd-bittiming", "C99 library: exact CAN FD bit timings for M_CAN, NBTP/DBTP/TDCR + TDC. No heap, sanitizer-tested; also runs in the browser.",
+     "OPEN SOURCE", "ai", ["C99", "CAN FD", "M_CAN", "CI"], ill_scope),
     ("moutaz-home", "Moutaz Home", "Self-hosted homelab on a Raspberry Pi 5: zero-trust access, encrypted 3-2-1 backups with restore tests, monitoring.",
      "LIVE", "live", ["Docker", "Cloudflare", "restic"], ill_pi),
     ("paperless-ai", "Paperless AI", "German paperwork filed by an LLM: sender, type, amount, deadline and a short summary.",

@@ -32,7 +32,7 @@ def pic(name, alt, width=None, href=None):
 
 
 CARDS = [("diag-agent", "diag-agent: a home server that diagnoses its own outages", "https://github.com/moutaz121493/diag-agent"),
-         ("can-tools", "CAN FD bit-timing calculator", S + "can-tools/"),
+         ("can-tools", "canfd-bittiming: C99 CAN FD bit-timing library for M_CAN", "https://github.com/moutaz121493/canfd-bittiming"),
          ("moutaz-home", "Moutaz Home: self-hosted homelab on a Raspberry Pi 5", S + "moutaz-home/"),
          ("paperless-ai", "Paperless AI: German paperwork filed by an LLM", S + "paperless-ai/"),
          ("home-rag", "Home RAG: master's thesis on cross-lingual retrieval", S + "home-rag/"),
