@@ -1,40 +1,40 @@
-### Hi, I'm Moutaz 👋
+<a href="https://moutazm.com"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg"><img alt="Moutaz Mohammad: embedded engineer building intelligent systems, from CAN bits to RAG pipelines" src="assets/banner-dark.svg"></picture></a>
 
-**Embedded engineer building intelligent systems, from CAN bits to RAG pipelines.**
+<p align="center">
+  <a href="https://moutazm.com"><img alt="Website" src="https://img.shields.io/badge/moutazm.com-f5b83f?style=for-the-badge&labelColor=0b1118&logo=googlechrome&logoColor=f5b83f"></a>
+  <a href="https://www.linkedin.com/in/moutaz-mohammad-728356347/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-4fd1ff?style=for-the-badge&labelColor=0b1118&logo=linkedin&logoColor=4fd1ff"></a>
+  <a href="mailto:moutaz@moutazm.com"><img alt="Email" src="https://img.shields.io/badge/moutaz@moutazm.com-45e08f?style=for-the-badge&labelColor=0b1118&logo=maildotru&logoColor=45e08f"></a>
+  <img alt="Open to roles in Germany" src="https://img.shields.io/badge/open_to-embedded_·_networking_·_applied_AI-8d9ca8?style=for-the-badge&labelColor=0b1118">
+</p>
 
-I test, debug and bring up automotive in-vehicle networks (CAN / CAN FD) at a specialised, ISO/IEC 17025-accredited
-test house in Germany. In my own time I run a small self-hosted infrastructure on a Raspberry Pi and build
-LLM-powered automation on top of it. I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual
-(Arabic/German) retrieval-augmented generation.
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-about-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-about-light.svg"><img alt="About" src="assets/div-about-dark.svg"></picture>
 
-**Where I'm heading:** AI engineering, with the discipline of embedded work behind it. Measured, secure, and built to keep running.
+I test, debug and bring up **automotive in-vehicle networks (CAN / CAN FD)** at an ISO/IEC 17025-accredited test house in Germany.
+In my own time I run a small **self-hosted infrastructure** on a Raspberry Pi and build **LLM-powered automation** on top of it.
+I'm studying for an M.Sc. in Web Technologies, with a thesis on cross-lingual (Arabic / German) **retrieval-augmented generation**.
 
----
+> **Where I'm heading:** AI engineering, with the discipline of embedded work behind it. Measured, secure, and built to keep running.
 
-#### 🔧 Selected work
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-selected-work-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-selected-work-light.svg"><img alt="Selected work" src="assets/div-selected-work-dark.svg"></picture>
 
-| Project | What it is |
-|---|---|
-| [**diag-agent**](https://github.com/moutaz121493/diag-agent) | A home server that diagnoses its own outages: alert → whitelisted read-only evidence → redaction → LLM with no tools → incident page + one notification. Never executes fixes. |
-| [**CAN FD bit-timing calculator**](https://moutazm.com/projects/can-tools/) | Finds valid nominal and data-phase bit timings for M_CAN-style controllers, entirely in the browser. |
-| [**Moutaz Home**](https://moutazm.com/projects/moutaz-home/) | Self-hosted homelab on a Raspberry Pi 5: zero-trust access, encrypted 3-2-1 backups with monthly restore tests, monitoring and alerting. |
-| [**Paperless AI**](https://moutazm.com/projects/paperless-ai/) | German paperwork filed by an LLM: sender, type, amount, deadline and a short summary. |
-| [**Home RAG**](https://moutazm.com/projects/home-rag/) *(in progress)* | Master's thesis: ask questions in Arabic about German documents, answers with sources, evaluated rather than guessed. |
-| [**moutazm.com**](https://github.com/moutaz121493/Moutazm.com) | My trilingual portfolio (EN / DE / AR with full RTL): Astro, Cloudflare Workers, no trackers. |
+<p>
+  <a href="https://github.com/moutaz121493/diag-agent"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-diag-agent-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/card-diag-agent-light.svg"><img alt="diag-agent: a home server that diagnoses its own outages" src="assets/card-diag-agent-dark.svg" width="49%"></picture></a>
+  <a href="https://moutazm.com/projects/can-tools/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-can-tools-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/card-can-tools-light.svg"><img alt="CAN FD bit-timing calculator" src="assets/card-can-tools-dark.svg" width="49%"></picture></a>
+</p>
+<p>
+  <a href="https://moutazm.com/projects/moutaz-home/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-moutaz-home-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/card-moutaz-home-light.svg"><img alt="Moutaz Home: self-hosted homelab" src="assets/card-moutaz-home-dark.svg" width="49%"></picture></a>
+  <a href="https://moutazm.com/projects/paperless-ai/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-paperless-ai-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/card-paperless-ai-light.svg"><img alt="Paperless AI" src="assets/card-paperless-ai-dark.svg" width="49%"></picture></a>
+</p>
+<p>
+  <a href="https://moutazm.com/projects/home-rag/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-home-rag-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/card-home-rag-light.svg"><img alt="Home RAG: master's thesis" src="assets/card-home-rag-dark.svg" width="49%"></picture></a>
+  <a href="https://github.com/moutaz121493/Moutazm.com"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/card-moutazm-com-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/card-moutazm-com-light.svg"><img alt="moutazm.com portfolio" src="assets/card-moutazm-com-dark.svg" width="49%"></picture></a>
+</p>
 
-#### 🧰 Toolbox
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-toolbox-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-toolbox-light.svg"><img alt="Toolbox" src="assets/div-toolbox-dark.svg"></picture>
 
-**Embedded & automotive networks:** CAN / CAN FD · ISO 16845-1 conformance · controller drivers on MCUs · bit timing & TDC · LIN, Automotive Ethernet (basics) · oscilloscope / bus analysis<br>
-**Python & tooling:** Python · test automation · log & result analysis · report generation · CLI tools<br>
-**Linux & infrastructure:** Debian / Raspberry Pi OS · Docker Compose · systemd · Cloudflare (Tunnel, Access, Workers) · Tailscale · restic / Backrest · Uptime Kuma<br>
-**Applied AI:** RAG · LLM integration (Claude, Gemini) · structured outputs · prompt-injection-aware design · evaluation
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/stack-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/stack-light.svg"><img alt="Toolbox: CAN / CAN FD, ISO 16845-1, MCU drivers, bit timing & TDC, LIN, Automotive Ethernet; Python, test automation; Debian, Docker Compose, systemd, Cloudflare, Tailscale, restic, Uptime Kuma; RAG, Claude, Gemini, structured output, evaluation" src="assets/stack-dark.svg"></picture>
 
-#### 🌍 Languages
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/div-contact-dark.svg"><source media="(prefers-color-scheme: light)" srcset="assets/div-contact-light.svg"><img alt="Contact" src="assets/div-contact-dark.svg"></picture>
 
-Arabic (native) · English (C1) · German (B2)
-
-#### 📫 Contact
-
-[moutazm.com](https://moutazm.com) · [LinkedIn](https://www.linkedin.com/in/moutaz-mohammad-728356347/) · moutaz@moutazm.com
-
-Open to conversations about embedded, networking and applied-AI roles in Germany.
+🌍 Arabic (native) · English (C1) · German (B2)  
+📫 [moutazm.com](https://moutazm.com) · [LinkedIn](https://www.linkedin.com/in/moutaz-mohammad-728356347/) · moutaz@moutazm.com · open to conversations about embedded, networking and applied-AI roles in Germany.
