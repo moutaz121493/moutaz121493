@@ -31,7 +31,10 @@ def pic(name, alt, width=None, href=None):
     return f'<a href="{href}">{img}</a>' if href else img
 
 
-CARDS = [("diag-agent", "diag-agent: a home server that diagnoses its own outages", "https://github.com/moutaz121493/diag-agent"),
+CARDS = [("pi-n8n-ai-stack", "pi-n8n-ai-stack: hardened ARM64 n8n infrastructure & workflow templates for Raspberry Pi 5", "https://github.com/moutaz121493/pi-n8n-ai-stack"),
+         ("guarded-agent", "guarded-agent-template: bounded Agentic AI microservice with cost caps, HITL gates, and CI evals", "https://github.com/moutaz121493/guarded-agent-template"),
+         ("whatsapp-agent", "whatsapp-agent-kit: WhatsApp Cloud API agent template with HITL approvals and local simulator", "https://github.com/moutaz121493/whatsapp-agent-kit"),
+         ("diag-agent", "diag-agent: a home server that diagnoses its own outages", "https://github.com/moutaz121493/diag-agent"),
          ("can-tools", "canfd-bittiming: C99 CAN FD bit-timing library for M_CAN", "https://github.com/moutaz121493/canfd-bittiming"),
          ("moutaz-home", "Moutaz Home: self-hosted homelab on a Raspberry Pi 5", S + "moutaz-home/"),
          ("paperless-ai", "Paperless AI: German paperwork filed by an LLM", S + "paperless-ai/"),
@@ -44,7 +47,11 @@ def main():
                if contributions() >= SKYLINE_MIN else "")
     thesis = (pic("thesis", "Thesis results, measured on the evaluation set") + "\n\n"
               if os.path.exists(os.path.join(A, "thesis-dark.svg")) else "")
-    rows = "".join("<p>\n  " + "\n  ".join(pic("card3d-" + s, a, "49%", h) for s, a, h in CARDS[i:i + 2]) + "\n</p>\n" for i in range(0, 6, 2))
+    rows = ""
+    for i in range(0, len(CARDS), 2):
+        chunk = CARDS[i:i + 2]
+        align = ' align="center"' if len(chunk) == 1 else ""
+        rows += f"<p{align}>\n  " + "\n  ".join(pic("card3d-" + s, a, "49%", h) for s, a, h in chunk) + "\n</p>\n"
     md = f'''{pic("hero", "Moutaz Mohammad: embedded engineer building intelligent systems, from CAN bits to RAG pipelines. A CAN FD frame travels along a twisted pair into a rotating 3D neural network.", href="https://moutazm.com/3d/")}
 
 <p align="center">

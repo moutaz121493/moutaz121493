@@ -188,7 +188,44 @@ def now(t):
     return svg.render()
 
 
+def ill_n8n(t, ox, oy):     # pi-n8n-ai-stack: three linked workflow nodes with a travelling pulse
+    a = box(0, 0, 14, 18, 18, 12, ox - 10, oy + 6, 1, t["accent"], t["line2"], t["line"], t["panel"])
+    b = box(24, 0, 14, 18, 18, 12, ox - 10, oy + 6, 1, t["ai"], t["line2"], t["line"], t["panel"])
+    c = box(48, 0, 14, 18, 18, 12, ox - 10, oy + 6, 1, t["live"], t["line2"], t["line"], t["panel"])
+    p1, p2 = iso(18, 9, 20, ox - 10, oy + 6), iso(48, 9, 20, ox - 10, oy + 6)
+    line = (f'<line x1="{p1[0]:.1f}" y1="{p1[1]:.1f}" x2="{p2[0]:.1f}" y2="{p2[1]:.1f}" '
+            f'stroke="{t["accent"]}" stroke-width="2" stroke-dasharray="4 4">'
+            f'<animate class="m" attributeName="stroke-dashoffset" values="16;0" dur="1.6s" repeatCount="indefinite"/></line>')
+    return line + a + b + c
+
+
+def ill_agent(t, ox, oy):   # guarded-agent-template: shielded core cube with orbiting check pulse
+    core = box(10, 10, 4, 34, 34, 28, ox, oy, 1, t["panel"], t["line2"], t["bg2"], t["ai"])
+    top = iso(27, 27, 32, ox, oy)
+    ring = (f'<ellipse cx="{top[0]:.1f}" cy="{top[1]:.1f}" rx="20" ry="11" fill="none" stroke="{t["live"]}" stroke-width="1.8" stroke-dasharray="10 6">'
+            f'<animate class="m" attributeName="stroke-dashoffset" values="32;0" dur="2.6s" repeatCount="indefinite"/></ellipse>')
+    return core + ring
+
+
+def ill_whatsapp(t, ox, oy):  # whatsapp-agent-kit: isometric chat bubble with typing dots
+    bub = box(6, 8, 6, 48, 22, 30, ox, oy, 1, t["panel"], t["line2"], t["bg2"], t["live"])
+    dots = []
+    for i, dx in enumerate((18, 30, 42)):
+        pt = iso(dx, 30, 21, ox, oy)
+        dots.append(
+            f'<circle cx="{pt[0]:.1f}" cy="{pt[1]:.1f}" r="3" fill="{t["live"]}">'
+            f'<animate class="m" attributeName="opacity" values=".25;1;.25" begin="{i * 0.35:.2f}s" dur="1.4s" repeatCount="indefinite"/></circle>'
+        )
+    return bub + "".join(dots)
+
+
 CARDS = [
+    ("pi-n8n-ai-stack", "pi-n8n-ai-stack", "Hardened ARM64 n8n infrastructure template for Raspberry Pi 5 (queue mode + 4 GB profile) with CI-validated agentic workflows.",
+     "TEMPLATE", "live", ["n8n", "Docker", "Pi 5", "CI"], ill_n8n),
+    ("guarded-agent", "guarded-agent-template", "Bounded Agentic AI microservice: atomic SQLite cost caps, HITL gates, prompt-injection screen, and automated CI evals.",
+     "TEMPLATE", "ai", ["FastAPI", "Agents", "Evals", "HITL"], ill_agent),
+    ("whatsapp-agent", "whatsapp-agent-kit", "WhatsApp Cloud API agent template with HMAC verification, allowlist, voice intake, HITL approvals, and local /demo simulator.",
+     "TEMPLATE", "live", ["WhatsApp", "n8n", "HITL", "FastAPI"], ill_whatsapp),
     ("diag-agent", "diag-agent", "A server that diagnoses its own outages: redacted evidence, an LLM with no tools, one alert with cause and fix.",
      "OPEN SOURCE", "accent", ["Python", "systemd", "LLM", "Uptime Kuma"], ill_monitor),
     ("can-tools", "canfd-bittiming", "C99 library: exact CAN FD bit timings for M_CAN, NBTP/DBTP/TDCR + TDC. No heap, sanitizer-tested; also runs in the browser.",
